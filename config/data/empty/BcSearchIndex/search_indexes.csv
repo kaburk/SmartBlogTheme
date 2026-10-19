@@ -1,0 +1,3 @@
+﻿id,type,model,model_id,site_id,content_id,content_filter_id,lft,rght,title,detail,url,status,priority,publish_begin,publish_end,created,modified
+1,ページ,Page,1,1,2,,2,3,ブログ,ブログの紹介文を、ここに書きます（固定ページ「index」の本文）。,/index,1,0.5,,,,
+2,ブログ,BlogContent,1,1,3,,4,5,記事一覧,"Web 開発とインフラの、調べたことと試したことのメモ。",/blog/,1,0.5,,,,

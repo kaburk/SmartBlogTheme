@@ -1,0 +1,8 @@
+@charset "utf-8";
+/* SmartBlogTheme : baserCMS5 ブログテーマ（スマート） / テーマ設定の4色。保存時にプレースホルダが置き換わる（1行に1つだけ書く） */
+:root {
+	--theme-main: MAIN;
+	--theme-sub: SUB;
+	--theme-link: LINK;
+	--theme-hover: HOVER;
+}

@@ -1,0 +1,5 @@
+﻿id,mail_content_id,no,name,field_name,type,head,attention,before_attachment,after_attachment,source,size,rows,maxlength,options,class,delimiter,default_value,description,group_field,group_valid,valid,valid_ex,auto_convert,not_empty,use_field,no_send,sort,created,modified
+1,1,1,お名前,name,text,お名前,,,,,,,255,"placeholder|サンプル 太郎",,,,,,,1,,,1,1,,1,,
+2,1,2,メールアドレス,email,email,メールアドレス,,,,,,,255,placeholder|sample@example.com,,,,,,,1,VALID_EMAIL,,1,1,,2,,
+3,1,3,お問い合わせの内容,message,textarea,お問い合わせの内容,,,,,,8,2000,"placeholder|記事の URL があれば、あわせてお書きください。",,,,,,,1,,,1,1,,3,,
+4,1,4,個人情報の取り扱い,agree,multi_check,個人情報の取り扱い,,,,個人情報の取り扱いに同意する,,,,,,,,ご入力いただいた個人情報は、お問い合わせへのご返信にのみ使用します。,,,1,VALID_NOT_UNCHECKED,,1,1,1,4,,

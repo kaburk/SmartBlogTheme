@@ -1,0 +1,12 @@
+{
+    "name": "kaburk/smart-blog-theme",
+    "description": "Smart monochrome blog theme for baserCMS5 (row-style post list, table of contents, reading time, light/dark mode)",
+    "homepage": "https://blog.kaburk.com/",
+    "type": "cakephp-plugin",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "SmartBlogTheme\\": "src/"
+        }
+    }
+}
