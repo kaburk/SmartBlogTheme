@@ -36,8 +36,8 @@ $fonts = (string)$this->BlogTheme->setting('fonts', '');
 	})();
 	</script>
 	<?php $this->BcBaser->title() ?>
-	<?php $this->BcBaser->metaDescription() ?>
-	<?php $this->BcBaser->metaKeywords() ?>
+	<?php /* description・keywords・SEO設定（bc-seo）・OGP・X のカード。SEO設定に足りない OGP はページの情報で補う（BlogThemeHelper::metaTags()） */ ?>
+	<?= $this->BlogTheme->metaTags() ?>
 	<?php $this->BcBaser->icon() ?>
 	<?php if ($this->BlogTheme->rssUrl()): ?>
 		<link rel="alternate" type="application/rss+xml" title="<?= h($this->BlogTheme->siteTitle()) ?>" href="<?= h($this->BcBaser->getUri($this->BlogTheme->rssUrl())) ?>">

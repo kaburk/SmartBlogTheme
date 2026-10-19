@@ -3,13 +3,14 @@ declare(strict_types=1);
 /**
  * SmartBlogTheme : baserCMS5 ブログテーマ（スマート）
  *
- * テンプレートで使う共通の処理（読了時間・抜粋・アイキャッチ・ナビ・シェア・広告のウィジェットエリア）
+ * テンプレートで使う共通の処理（読了時間・抜粋・アイキャッチ・ナビ・シェア・広告のウィジェットエリア・head の meta タグ）
  */
 
 namespace SmartBlogTheme\View\Helper;
 
 use BcBlog\Model\Entity\BlogPost;
 use Cake\Core\Configure;
+use Cake\Core\Plugin;
 use Cake\ORM\TableRegistry;
 use Cake\View\Helper;
 
@@ -498,6 +499,80 @@ class BlogThemeHelper extends Helper
             $links[] = ['key' => 'rss', 'label' => 'RSS', 'url' => $rss];
         }
         return $links;
+    }
+
+    /**
+     * head の meta タグ（description・keywords・SEO設定・OGP・X のカード）
+     *
+     * SEO設定（bc-seo）が有効なら、管理画面の SEO設定の値を優先する。bc-seo は入力された値しか出さない
+     * （og:title・og:url は記事ごとに入力が必要、twitter:card は項目がない、og:image はアイキャッチのサムネイル）ため、
+     * 足りないものをページの情報で補う。
+     * - og:title：ページのタイトル（トップはサイト名）／og:description：ディスクリプション
+     * - og:type：記事は article、それ以外は website／og:url：そのページの URL
+     * - og:image：記事のアイキャッチ（元の大きさ）→ 本文の最初の画像。bc-seo がサムネイルを出す場合も元の大きさにする
+     * - og:site_name：サイト名／twitter:card：画像があれば summary_large_image、なければ summary
+     * - canonical は BcBaserHelper が出すので、ここでは出さない
+     *
+     * @return string HTML
+     */
+    public function metaTags(): string
+    {
+        $seo = Plugin::isLoaded('BcSeo')? (array)$this->BcBaser->getSeoMeta() : [];
+        $value = fn(string $key): string => trim(strip_tags((string)($seo[$key]['value'] ?? '')));
+        $view = $this->getView();
+        $request = $view->getRequest();
+        $post = $view->get('post');
+        $isPost = $post instanceof BlogPost && $request->getParam('controller') === 'Blog' && $request->getParam('action') === 'archives';
+        $full = fn(string $url): string => preg_match('/^https?:/i', $url)? $url : $this->BcBaser->getUrl($url, true);
+
+        $description = $value('description') ?: trim(strip_tags((string)$this->BcBaser->getDescription()));
+        $tags = [
+            ['name', 'description', $description],
+            ['name', 'keywords', $value('keywords') ?: (string)$this->BcBaser->getKeywords()],
+        ];
+
+        // SEO設定にあって、下で扱わない項目（設定で足した項目など）はそのまま出す
+        $handled = ['description', 'keywords', 'canonical_url', 'og_title', 'og_description', 'og_type', 'og_url', 'og_image'];
+        foreach ($seo as $key => $field) {
+            if (in_array($key, $handled, true) || $value($key) === '') continue;
+            foreach (['property', 'name'] as $attr) {
+                if (!empty($field[$attr])) {
+                    $tags[] = [$attr, $field[$attr], $value($key)];
+                    break;
+                }
+            }
+        }
+
+        $title = $value('og_title') ?: ($this->BcBaser->isHome()? $this->siteTitle() : trim(strip_tags((string)$this->BcBaser->getContentsTitle())));
+        $image = $value('og_image');
+        if ($isPost) {
+            // bc-seo はアイキャッチのサムネイル（600×600）を og:image にするので、元の大きさに差し替える
+            // （画像の URL の末尾には呼ぶたびに変わる ?数字 が付くので、それを除いて比べる）
+            $path = fn(string $url): string => (string)strtok($url, '?');
+            $thumb = (string)$this->Blog->getEyeCatch($post, ['output' => 'url']);
+            $large = (string)$this->Blog->getEyeCatch($post, ['output' => 'url', 'imgsize' => 'default']);
+            if ($large && ($image === '' || ($thumb && $path($image) === $path($full($thumb))))) {
+                $image = $large;
+            }
+            if ($image === '' && $this->firstImage($post)) {
+                $image = $this->firstImage($post);
+            }
+        }
+        $tags[] = ['property', 'og:title', $title];
+        $tags[] = ['property', 'og:description', $value('og_description') ?: $description];
+        $tags[] = ['property', 'og:type', $value('og_type') ?: ($isPost? 'article' : 'website')];
+        $tags[] = ['property', 'og:url', $value('og_url') ?: $this->BcBaser->getUrl($this->BcBaser->getHere(), true)];
+        $tags[] = ['property', 'og:image', $image? $full($image) : ''];
+        $tags[] = ['property', 'og:site_name', $this->siteTitle()];
+        $tags[] = ['name', 'twitter:card', $image? 'summary_large_image' : 'summary'];
+
+        $html = '';
+        foreach ($tags as [$attr, $key, $content]) {
+            // description・keywords は空でも出す（BcBaserHelper::metaDescription() などと同じ）。ほかは空なら出さない
+            if ($content === '' && !in_array($key, ['description', 'keywords'], true)) continue;
+            $html .= '<meta ' . $attr . '="' . h($key) . '" content="' . h($content) . '">' . "\n";
+        }
+        return $html;
     }
 
     /**
