@@ -443,11 +443,11 @@ body {
 .bt-comment-none { margin: 0; color: var(--fg-muted); font-size: 14px; }
 .bt-comment-form { display: grid; gap: 14px; margin-top: 24px; }
 .bt-comment-form h3 { margin: 0; font-size: 16px; color: var(--heading); }
-.bt-field label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 700; }
+.bt-field label { display: inline-block; margin-bottom: 6px; font-size: 14px; font-weight: 700; } /* 「必須」を項目名と同じ行に並べる */
 .bt-field .bt-req { margin-left: 6px; font-size: 12px; font-weight: 400; color: var(--main-ink); }
 .bt-field .bt-note { margin: 4px 0 0; font-size: 12px; color: var(--fg-muted); }
 .bt-field input[type="text"], .bt-field input[type="email"], .bt-field input[type="url"], .bt-field textarea {
-	width: 100%; padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: var(--radius);
+	display: block; width: 100%; padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: var(--radius);
 	background: var(--bg); color: var(--fg); font-size: 16px; line-height: 1.6;
 }
 .bt-field textarea { min-height: 140px; resize: vertical; }
@@ -566,6 +566,9 @@ body {
 .bt-site .bt-footer-nav a { display: inline-flex; align-items: center; gap: 6px; color: var(--fg); text-decoration: none; }
 .bt-site .bt-footer-nav a:hover { color: var(--hover-c); text-decoration: underline; }
 .bt-footer-nav .bt-ico { width: 15px; height: 15px; }
+/* ウィジェットエリア「フッター：プロフィール」（テキストのウィジェットに .bt-profile を書く） */
+.bt-footer-profile { flex: 1 1 320px; max-width: 520px; }
+.bt-footer-nav > .bt-footer-name { margin-bottom: 10px; }
 .bt-copyright { margin: 28px 0 0; font-size: 12px; color: var(--fg-muted); }
 
 /* ---------- Responsive（コンテナクエリ：.bt-site の幅で切り替え） ---------- */

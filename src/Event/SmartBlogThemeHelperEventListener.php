@@ -86,11 +86,11 @@ class SmartBlogThemeHelperEventListener extends BcHelperEventListener
                     'type' => 'select',
                     'options' => [
                         'contents' => __d('baser_core', 'コンテンツ管理のメニュー'),
-                        'categories' => __d('baser_core', 'ブログのカテゴリ＋固定ページ'),
+                        'categories' => __d('baser_core', 'ブログのカテゴリ＋固定ページなど'),
                     ],
                     'default' => (string)Configure::read('BlogTheme.navSource', 'contents'),
                 ]) .
-                '<p class="bca-form-table__note">' . __d('baser_core', '「コンテンツ管理のメニュー」は、ルート直下のブログ・固定ページ・リンク・メールフォームを並び順どおりに出します（「メニューに表示しない」は除く）。「ブログのカテゴリ＋固定ページ」は、最初のブログのカテゴリと固定ページを出します。') . '</p>',
+                '<p class="bca-form-table__note">' . __d('baser_core', '「コンテンツ管理のメニュー」は、ルート直下のブログ・固定ページ・リンク・メールフォームを並び順どおりに出します（「メニューに表示しない」は除く）。「ブログのカテゴリ＋固定ページなど」は、最初のブログのカテゴリと、ルート直下の固定ページ・メールフォーム・リンクを出します。') . '</p>',
         ];
         $event->setData('fields', $fields);
     }

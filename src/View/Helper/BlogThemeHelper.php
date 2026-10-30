@@ -159,6 +159,7 @@ class BlogThemeHelper extends Helper
 
     /**
      * 一覧のカードの画像。アイキャッチ → 本文の最初の画像 → 「メインを薄めた背景＋カテゴリ名」の枠 の順
+     * スタイルの設定 thumbFallback が none のときは、枠を作らず空文字を返す（カードは文字だけになる）
      *
      * @param BlogPost $post
      * @param string $size アイキャッチの画像サイズ（default / thumb / mobile_thumb）
@@ -179,6 +180,9 @@ class BlogThemeHelper extends Helper
         $src = $this->firstImage($post);
         if ($src) {
             return '<img class="bt-thumb-img" src="' . h($src) . '" alt="" loading="lazy">';
+        }
+        if ($this->setting('thumbFallback', 'frame') === 'none') {
+            return '';
         }
         $label = $this->Blog->getCategoryTitle($post) ?: $this->Blog->getTitle();
         return '<div class="bt-card-noimage" aria-hidden="true"><span>' . h($label) . '</span></div>';
@@ -292,6 +296,17 @@ class BlogThemeHelper extends Helper
     }
 
     /**
+     * カード・記事の日付（書式はスタイルの設定 dateFormat。初期値 Y.m.d）
+     *
+     * @param \DateTimeInterface|null $date
+     * @return string
+     */
+    public function dateText(?\DateTimeInterface $date): string
+    {
+        return $date? $date->format((string)$this->setting('dateFormat', 'Y.m.d')) : '';
+    }
+
+    /**
      * サイト名（サイト管理の「サイトタイトル」。空なら「表示名」）
      *
      * @return string
@@ -363,7 +378,7 @@ class BlogThemeHelper extends Helper
      *
      * - contents：コンテンツ管理のルート直下（ブログ・固定ページ・リンク・メールフォームなど。並び順どおり）。
      *   「メニューに表示しない」とトップページ（index）は除く。「別ウィンドウで開く」は blank = true
-     * - categories：最初のブログのカテゴリ（第1階層）＋ルート直下の固定ページ（「メニューに表示しない」を除く）
+     * - categories：最初のブログのカテゴリ（第1階層）＋ルート直下の固定ページ・メールフォーム・リンク（「メニューに表示しない」を除く）
      * @return array [['title' => '', 'url' => '', 'current' => bool, 'blank' => bool], ...]
      */
     public function navItems(): array
@@ -414,9 +429,10 @@ class BlogThemeHelper extends Helper
                 }
             }
         }
+        // ルート直下の固定ページ・メールフォーム・リンク（お問い合わせもナビに出す）
         $pages = $contentsTable->find()
             ->where([
-                'Contents.type' => 'Page',
+                'Contents.type IN' => ['Page', 'MailContent', 'ContentLink'],
                 'Contents.site_id' => $site->id ?? 1,
                 'Contents.level' => 1,
                 'Contents.status' => true,
@@ -426,8 +442,11 @@ class BlogThemeHelper extends Helper
             ->orderBy(['Contents.lft' => 'ASC'])
             ->all();
         foreach ($pages as $page) {
-            $url = $this->BcBaser->getContentsUrl($page->url, false);
-            $items[] = ['title' => $page->title, 'url' => $url, 'current' => $here === rawurldecode($url), 'blank' => false];
+            if (!$page->title) continue;
+            $url = $this->BcBaser->getContentsUrl($page->url, false, null, false);
+            $path = rawurldecode((string)$page->url);
+            $current = $here === $path || (str_ends_with($path, '/') && $path !== '/' && str_starts_with($here, $path));
+            $items[] = ['title' => $page->title, 'url' => $url, 'current' => $current, 'blank' => !empty($page->blank_link)];
         }
         return $this->cache['nav'] = $items;
     }
@@ -585,6 +604,66 @@ class BlogThemeHelper extends Helper
     public function icon(string $name, string $class = 'bt-ico'): string
     {
         return '<svg class="' . h($class) . '" aria-hidden="true"><use href="#bt-i-' . h($name) . '"></use></svg>';
+    }
+
+    /**
+     * サブフォルダに設置したサイト（例：https://example.com/hoge/）で、ページの HTML の中の
+     * ルートからのパス（/contact/・/<テーマ>/img/… など）に、設置したフォルダ（/hoge）を足す
+     *
+     * - 初期データの本文は、ルートに置いたときのパスで書いているため、サブフォルダではリンクが切れる
+     * - ルートに置いたサイト（base が空）では何もしない（出力は変わらない）
+     * - View.afterLayout で呼ばれる（Helper::implementedEvents()）
+     *
+     * @param \Cake\Event\EventInterface $event
+     * @param string $layoutFile
+     * @return void
+     */
+    public function afterLayout(\Cake\Event\EventInterface $event, $layoutFile): void
+    {
+        $base = rtrim((string)$this->getView()->getRequest()->getAttribute('base'), '/');
+        if ($base === '') {
+            return;
+        }
+        $view = $this->getView();
+        $view->assign('content', self::addBase($view->fetch('content'), $base));
+    }
+
+    /**
+     * HTML の href・src・action・poster・srcset のうち、ルートからのパスに $base を足す
+     * - //（プロトコル相対）で始まるもの、すでに $base/ で始まるものはそのまま
+     *
+     * @param string $html
+     * @param string $base 設置したフォルダ（例：/hoge）
+     * @return string
+     */
+    public static function addBase(string $html, string $base): string
+    {
+        $base = rtrim($base, '/');
+        if ($base === '') {
+            return $html;
+        }
+        $fix = function (string $url) use ($base): string {
+            if (!str_starts_with($url, '/') || str_starts_with($url, '//') || $url === $base || str_starts_with($url, $base . '/')) {
+                return $url;
+            }
+            return $base . $url;
+        };
+        $html = preg_replace_callback(
+            '/(?<![\w-])(href|src|action|poster)=(["\'])(\/[^"\']*)\2/i',
+            fn(array $m): string => $m[1] . '=' . $m[2] . $fix($m[3]) . $m[2],
+            $html
+        ) ?? $html;
+        return preg_replace_callback(
+            '/(?<![\w-])srcset=(["\'])([^"\']*)\1/i',
+            function (array $m) use ($fix): string {
+                $items = array_map(function (string $item) use ($fix): string {
+                    $parts = preg_split('/\s+/', trim($item), 2);
+                    return trim($fix($parts[0]) . ' ' . ($parts[1] ?? ''));
+                }, explode(',', $m[2]));
+                return 'srcset=' . $m[1] . implode(', ', $items) . $m[1];
+            },
+            $html
+        ) ?? $html;
     }
 
 }
