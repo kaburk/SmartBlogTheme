@@ -6,7 +6,8 @@
  * - 記事の上：カテゴリ・タイトル・投稿日・更新日（投稿日と違う日のとき）・読了時間・タグ・書いた人、アイキャッチ
  * - 本文の上下：シェア（上はスタイルの設定 shareTop が true のとき）、ウィジェットエリア「広告：記事の上」「広告：記事の下」
  * - 目次：本文の h2・h3 から site.js が作る（PC はサイドバーの最後、スマホは本文の上で開閉）。スタイルの設定 toc が false なら出さない
- * - 本文の下：ウィジェットエリア「記事の下：著者」、前後の記事、関連記事（同じタグの記事 3件）、コメント
+ * - 本文の下：ウィジェットエリア「記事の下：CTA」（資料請求の箱など）、「記事の下：著者」、前後の記事、関連記事（同じタグの記事 3件）、コメント
+ * - 本文の上の目次は、スタイルの設定 tocOpen が true なら開いた状態で出す
  * @var \BcBlog\View\BlogFrontAppView $this
  * @var \BcBlog\Model\Entity\BlogPost $post ブログ記事データ
  */
@@ -96,7 +97,7 @@ endif;
 		<?= $this->BlogTheme->namedWidgetArea('広告：記事の上') ?>
 
 		<?php if ($toc): ?>
-			<details class="bt-toc-sp" data-bt-toc-box hidden>
+			<details class="bt-toc-sp"<?= $this->BlogTheme->setting('tocOpen')? ' open' : '' ?> data-bt-toc-box hidden>
 				<summary>目次<?= $this->BlogTheme->icon('chevron') ?></summary>
 				<nav class="bt-toc" aria-label="目次"><ol data-bt-toc></ol></nav>
 			</details>
@@ -106,6 +107,7 @@ endif;
 			<?php $this->BcBaser->blogPostContent($post) ?>
 		</div>
 
+		<?= $this->BlogTheme->namedWidgetArea('記事の下：CTA', 'bt-cta-area', null) ?>
 		<?= $this->BlogTheme->namedWidgetArea('広告：記事の下') ?>
 		<?= $shareHtml ?>
 

@@ -13,6 +13,9 @@ $id = isset($blogContent)? $blogContent->id : $blog_content_id;
 $data = $this->Blog->getViewVarsRecentEntriesWidget($id, (int)$count);
 $recentEntries = $data['recentEntries'];
 $here = $this->getRequest()->getPath();
+// 小さなサムネイルを付ける（スタイルの設定 recentThumb）
+$this->loadHelper('SmartBlogTheme.BlogTheme');
+$thumbs = (bool)$this->BlogTheme->setting('recentThumb', false);
 ?>
 <?php if ($recentEntries && count($recentEntries)): ?>
 	<section class="bt-widget bt-widget-blog-recent">
@@ -24,9 +27,14 @@ $here = $this->getRequest()->getPath();
 				<?php foreach ($recentEntries as $entry): ?>
 					<?php $url = $this->Blog->getPostLinkUrl($entry, false) ?>
 					<li>
-						<a href="<?= h($this->BcBaser->getUrl($url)) ?>"<?= $here === $url? ' aria-current="page"' : '' ?>>
-							<span class="bt-w-title"><?= h($entry->title) ?></span>
-							<time datetime="<?= h($entry->posted?->format('Y-m-d')) ?>"><?= h($entry->posted?->format('Y.m.d')) ?></time>
+						<a href="<?= h($this->BcBaser->getUrl($url)) ?>"<?= $here === $url? ' aria-current="page"' : '' ?><?= $thumbs? ' class="bt-recent-has-thumb"' : '' ?>>
+							<?php if ($thumbs): ?>
+								<span class="bt-recent-thumb" aria-hidden="true"><?= $this->BlogTheme->thumb($entry, 'thumb') ?></span>
+							<?php endif ?>
+							<span class="bt-recent-text">
+								<span class="bt-w-title"><?= h($entry->title) ?></span>
+								<time datetime="<?= h($entry->posted?->format('Y-m-d')) ?>"><?= h($this->BlogTheme->dateText($entry->posted)) ?></time>
+							</span>
 						</a>
 					</li>
 				<?php endforeach ?>

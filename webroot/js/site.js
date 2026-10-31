@@ -148,6 +148,24 @@
 		if (td && td.textContent.replace(/\u00a0/g, '').trim() === '') tr.hidden = true;
 	});
 
+	/* ---------- メールフォームの入力画面：URL の ?項目名=値 で初期値を選ぶ ----------
+	 * 例：資料請求のボタンを /contact/?purpose=資料請求 にすると、ご用件（purpose）の「資料請求」を選んだ状態で開く。
+	 * ラジオ・チェックボックスは値が一致するものを選び、入力欄は空のときだけ入れる（hidden・file は触らない） */
+	(function () {
+		var box = document.querySelector('.bt-form:not(.is-confirm)');
+		if (!box || !window.URLSearchParams || !location.search) return;
+		new URLSearchParams(location.search).forEach(function (value, key) {
+			if (!/^[A-Za-z0-9_]+$/.test(key)) return;
+			box.querySelectorAll('[name="' + key + '"], [name="' + key + '[]"]').forEach(function (el) {
+				if (el.type === 'radio' || el.type === 'checkbox') {
+					if (el.value === value) el.checked = true;
+				} else if (el.type !== 'hidden' && el.type !== 'file' && el.value === '') {
+					el.value = value;
+				}
+			});
+		});
+	})();
+
 	function init() {
 		var body = document.querySelector('[data-bt-post-body]');
 		if (!body) return;

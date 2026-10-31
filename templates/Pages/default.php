@@ -5,6 +5,7 @@
  * 固定ページ
  * - トップページ：本文を紹介文として出し、その下に最初のブログの新着記事（ブログ設定の「一覧表示件数」）と「記事の一覧へ」
  *   スタイルの設定 tagStrip が true なら、紹介文の下に「タグから探す」
+ *   スタイルの設定 topLayout が sections なら、新着の一覧の代わりにピックアップとカテゴリごとのまとまり（BcBlog.top_sections）
  * - それ以外：記事と同じ見た目の本文（目次・シェア・日付は出さない）
  * @var \BaserCore\View\BcFrontAppView $this
  * @var \BaserCore\Model\Entity\Page $page
@@ -22,7 +23,9 @@ $hasBody = trim(strip_tags($contents, '<img><iframe>')) !== '';
 	<?php if ($hasBody): ?>
 		<div class="bt-intro"><?= $contents ?></div>
 	<?php endif ?>
-	<?php if ($blog): ?>
+	<?php if ($blog && $this->BlogTheme->setting('topLayout', 'list') === 'sections'): ?>
+		<?php $this->BcBaser->element('BcBlog.top_sections') ?>
+	<?php elseif ($blog): ?>
 		<?php if ($this->BlogTheme->setting('tagStrip')): ?>
 			<?php $this->BcBaser->element('BcBlog.tag_list', ['blogContentId' => (int)$blog->entity_id, 'viewCount' => true, 'wrap' => 'strip', 'limit' => 12]) ?>
 		<?php endif ?>

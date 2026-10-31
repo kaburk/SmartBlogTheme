@@ -556,6 +556,51 @@ body {
 	.bt-form-actions .bt-btn { width: 100%; }
 }
 
+/* ---------- オウンドメディア向けの部品（使わないテーマでは何も出ない） ---------- */
+/* ヘッダーの目立つボタン（BlogThemeHelper::headerCta()） */
+.bt-site .bt-header-cta { min-height: 40px; padding: 0 18px; font-size: 14px; white-space: nowrap; }
+/* トップのまとまり（BcBlog.top_sections） */
+.bt-top-sec + .bt-top-sec, .bt-top-sec + .bt-cta-area, .bt-cta-area + .bt-top-sec { margin-top: 56px; }
+.bt-sec-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 0 0 20px; }
+.bt-sec-head .bt-section-title { margin: 0; }
+.bt-site .bt-sec-more { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; font-size: 14px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.bt-site .bt-sec-more:hover { text-decoration: underline; }
+.bt-sec-more .bt-ico { width: 15px; height: 15px; }
+.bt-post-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.bt-post-grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+/* CTA（資料請求などの帯・箱。ウィジェットエリア「トップ：CTA」「記事の下：CTA」「広告：一覧の途中」、サイドバーのテキスト）
+   テキストのウィジェットに次の形で書く（「タイトルを表示」はオフ）
+   <div class="bt-cta"><div class="bt-cta-text"><p class="bt-cta-kicker">無料資料</p><p class="bt-cta-title">見出し</p><p>短い文</p></div><a class="bt-btn" href="/contact/?purpose=資料請求">資料を請求する</a></div> */
+.bt-cta-area { width: 100%; }
+.bt-article .bt-cta-area { margin: 40px 0; }
+.bt-cta {
+	display: flex; align-items: center; justify-content: space-between; gap: 16px 32px; flex-wrap: wrap;
+	padding: 32px 40px; border-radius: var(--radius); background: var(--sub); color: var(--on-sub);
+}
+.bt-cta-text { flex: 1 1 320px; min-width: 0; }
+.bt-cta p { margin: 0; }
+.bt-cta-kicker { font-size: 13px; font-weight: 700; letter-spacing: .06em; opacity: .9; }
+.bt-cta .bt-cta-title { margin: 4px 0 6px; font-size: 22px; font-weight: 800; line-height: 1.5; }
+.bt-site .bt-cta .bt-btn { flex: none; min-height: 52px; padding: 0 28px; font-size: 16px; }
+.bt-sidebar .bt-cta { display: block; padding: 24px; }
+.bt-sidebar .bt-cta .bt-cta-title { font-size: 18px; }
+.bt-sidebar .bt-cta .bt-btn { width: 100%; margin-top: 16px; }
+[data-theme="dark"] .bt-cta { background: color-mix(in oklab, var(--main) 18%, var(--surface)); color: var(--fg); }
+/* 最近の投稿の小さなサムネイル（スタイルの設定 recentThumb） */
+.bt-site .bt-recent-list a.bt-recent-has-thumb { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 12px; align-items: center; }
+.bt-recent-thumb { display: block; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 4px; background: var(--ph-bg); }
+.bt-recent-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.bt-recent-thumb .bt-card-noimage { font-size: 11px; letter-spacing: 0; padding: 2px; }
+@container site (max-width: 1000px) {
+	.bt-post-grid--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container site (max-width: 760px) {
+	.bt-post-grid--3 { grid-template-columns: minmax(0, 1fr); }
+	.bt-cta { padding: 24px 20px; }
+	.bt-site .bt-cta .bt-btn { width: 100%; }
+	.bt-site .bt-header-cta { padding: 0 12px; font-size: 13px; }
+}
+
 /* ---------- Footer ---------- */
 .bt-footer { margin-top: auto; padding-block: 40px 28px; background: var(--surface); border-top: 1px solid var(--line); font-size: 14px; }
 .bt-footer-inner { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 20px 40px; }

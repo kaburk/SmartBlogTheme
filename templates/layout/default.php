@@ -6,6 +6,7 @@
  *
  * 呼出箇所：全ページ
  * - 本文の右にサイドバー（ウィジェットエリア）。記事の詳細では、サイドバーの最後に目次（single.php が btToc ブロックに書く）
+ *   スタイルの設定 homeSidebar が false なら、トップページではサイドバーを出さない
  * - 配色：<html data-theme> を描画前に決める。配色モード（テーマ設定 → config/setting.php の colorScheme）と、
  *   切り替えボタンの有無（schemeToggle）で決まる
  *   - ボタンあり：閲覧者が選んだ配色（localStorage）→ 配色モード（auto なら OS の設定）
@@ -17,6 +18,7 @@ $variant = (string)$this->BlogTheme->setting('variant', 'clean');
 $colorScheme = $this->BlogTheme->colorScheme();
 $schemeToggle = $this->BlogTheme->schemeToggle();
 $fonts = (string)$this->BlogTheme->setting('fonts', '');
+$noSidebar = $this->BcBaser->isHome() && !$this->BlogTheme->setting('homeSidebar', true);
 ?>
 <!DOCTYPE html>
 <html lang="<?= h($this->BcBaser->getHtmlLang()) ?>" data-variant="<?= h($variant) ?>" data-scheme-mode="<?= h($colorScheme) ?>" data-scheme-toggle="<?= $schemeToggle? '1' : '0' ?>">
@@ -64,7 +66,7 @@ $fonts = (string)$this->BlogTheme->setting('fonts', '');
 
 	<?php $this->BcBaser->header() ?>
 
-	<div class="bt-container bt-layout">
+	<div class="bt-container bt-layout<?= $noSidebar? ' bt-layout--single' : '' ?>">
 		<main class="bt-main" id="main">
 			<?php if (!$this->BcBaser->isHome()): ?>
 				<?php $this->BcBaser->element('crumbs') ?>
@@ -73,10 +75,12 @@ $fonts = (string)$this->BlogTheme->setting('fonts', '');
 			<?php $this->BcBaser->content() ?>
 		</main>
 
-		<aside class="bt-sidebar" aria-label="サイドバー">
-			<?php $this->BcBaser->widgetArea() ?>
-			<?= $this->fetch('btToc') ?>
-		</aside>
+		<?php if (!$noSidebar): ?>
+			<aside class="bt-sidebar" aria-label="サイドバー">
+				<?php $this->BcBaser->widgetArea() ?>
+				<?= $this->fetch('btToc') ?>
+			</aside>
+		<?php endif ?>
 	</div>
 
 	<?php $this->BcBaser->footer() ?>

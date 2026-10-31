@@ -184,8 +184,31 @@ class BlogThemeHelper extends Helper
         if ($this->setting('thumbFallback', 'frame') === 'none') {
             return '';
         }
-        $label = $this->Blog->getCategoryTitle($post) ?: $this->Blog->getTitle();
+        $label = $this->categoryTitle($post) ?: $this->Blog->getTitle();
         return '<div class="bt-card-noimage" aria-hidden="true"><span>' . h($label) . '</span></div>';
+    }
+
+    /**
+     * 記事のカテゴリ名。カテゴリを含まない検索の記事（最近の投稿のウィジェットなど）は、カテゴリの表から引く
+     *
+     * @param BlogPost $post
+     * @return string
+     */
+    public function categoryTitle(BlogPost $post): string
+    {
+        if (!empty($post->blog_category->title)) {
+            return (string)$post->blog_category->title;
+        }
+        if (empty($post->blog_category_id)) {
+            return '';
+        }
+        $key = 'categoryTitle' . $post->blog_category_id;
+        if (!isset($this->cache[$key])) {
+            $category = TableRegistry::getTableLocator()->get('BcBlog.BlogCategories')->find()
+                ->select(['title'])->where(['id' => $post->blog_category_id])->first();
+            $this->cache[$key] = (string)($category->title ?? '');
+        }
+        return $this->cache[$key];
     }
 
     /**
@@ -293,6 +316,29 @@ class BlogThemeHelper extends Helper
             return false;
         }
         return $post->modified->format('Ymd') > $post->posted->format('Ymd');
+    }
+
+    /**
+     * ヘッダーの目立つボタン（資料請求など）
+     * テーマ設定の「ヘッダーのボタン」（bt_header_cta_label・bt_header_cta_url）→ スタイルの設定 headerCta の順。
+     * テーマ設定を保存していて文字が空なら出さない
+     *
+     * @return array{label: string, url: string}|null
+     */
+    public function headerCta(): ?array
+    {
+        $this->themeConfig('bt_header_cta_label'); // テーマ設定の値を読み込む
+        if (array_key_exists('bt_header_cta_label', $this->cache['themeConfigs'])) {
+            // テーマ設定を保存済み（空で保存したときは出さない）
+            $label = trim((string)$this->cache['themeConfigs']['bt_header_cta_label']);
+            $url = trim((string)($this->cache['themeConfigs']['bt_header_cta_url'] ?? ''));
+            return ($label !== '' && $url !== '')? ['label' => $label, 'url' => $url] : null;
+        }
+        $cta = $this->setting('headerCta');
+        if (!is_array($cta) || empty($cta['label']) || empty($cta['url'])) {
+            return null;
+        }
+        return ['label' => (string)$cta['label'], 'url' => (string)$cta['url']];
     }
 
     /**
