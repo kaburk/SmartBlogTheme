@@ -28,7 +28,7 @@ $hasBody = trim(strip_tags($contents, '<img><iframe>')) !== '';
 		<?php endif ?>
 		<h2 class="bt-section-title">新着記事</h2>
 		<?php $this->BcBaser->blogPosts($blog->name, (int)($blogContent->list_count ?? 10)) ?>
-		<p class="bt-more"><a class="bt-btn" href="<?= h($this->BcBaser->getUrl($this->BcBaser->getContentsUrl($blog->url, false))) ?>">記事の一覧へ</a></p>
+		<p class="bt-more"><a class="bt-btn" href="<?= h($this->BcBaser->getUrl($this->BcBaser->getContentsUrl($blog->url, false, null, false))) ?>">記事の一覧へ</a></p>
 	<?php endif ?>
 <?php else: ?>
 	<article class="bt-article">

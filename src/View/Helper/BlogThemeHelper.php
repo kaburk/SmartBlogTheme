@@ -264,7 +264,7 @@ class BlogThemeHelper extends Helper
         if (!$url) {
             $url = $this->Blog->getContentsUrl((int)$post->blog_content_id, false);
         }
-        return $this->BcBaser->getContentsUrl($url, false);
+        return $this->BcBaser->getContentsUrl($url, false, null, false);
     }
 
     /**
@@ -414,7 +414,7 @@ class BlogThemeHelper extends Helper
 
         $blog = $this->mainBlog();
         if ($blog) {
-            $base = $this->BcBaser->getContentsUrl($blog->url, false);
+            $base = $this->BcBaser->getContentsUrl($blog->url, false, null, false);
             $categories = $this->Blog->getCategories(['blogContentId' => $blog->entity_id, 'depth' => 1]);
             foreach ($categories as $category) {
                 $url = $base . 'archives/category/' . rawurlencode($category->name);
@@ -462,7 +462,7 @@ class BlogThemeHelper extends Helper
         if (!$blog) {
             return '';
         }
-        return $this->BcBaser->getContentsUrl($blog->url, false) . 'index.rss';
+        return $this->BcBaser->getContentsUrl($blog->url, false, null, false) . 'index.rss';
     }
 
     /**
